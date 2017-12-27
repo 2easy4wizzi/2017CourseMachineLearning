@@ -1,12 +1,14 @@
 %authors: 
 % Matan Finch, id 300895315
 % Gilad Eini , id 034744920
-clear;
-close all;
-clc;
-[Pw, P] = learn_NB_text();
-suc = ClassifyNB_text(Pw, P);
-disp(['success rate on NBc: ' num2str(suc)]);
+function q2sol()
+    clear;
+    close all;
+    clc;
+    [Pw, P] = learn_NB_text();
+    suc = ClassifyNB_text(Pw, P);
+    disp(['success rate on NBc: ' num2str(suc)]);
+end
 
 %Q2 naive bayes alg
 function [Pw, P] = learn_NB_text()
