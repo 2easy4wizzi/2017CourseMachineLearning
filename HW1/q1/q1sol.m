@@ -1,7 +1,9 @@
 %authors: 
 % Matan Finch, id 300895315
 % Gilad Eini , id 034744920
-
+clear;
+close all;
+clc;
 %Q1
 %taks A: create 300 samples for each class (C1, C2)
 sampleSize = 300;
