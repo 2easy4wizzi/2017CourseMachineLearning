@@ -74,7 +74,7 @@ disp(['Error rate (same loss values)is ' num2str(errorRate)]);
 syms x;
 eqnLeft  = (1/(estimatedSigC1*sqrt(2*pi)))*exp(-(x-estimatedMiuC1)^2/(2*estimatedSigC1^2));%P(X|C1)*lamdaC2C1 // lamdaC2C1 4
 eqnRight = (1/(estimatedSigC2*sqrt(2*pi)))*exp(-(x-estimatedMiuC2)^2/(2*estimatedSigC2^2));%P(X|C2)*lamdaC1C2 // lamdaC1C2 1
-solxBias = solve( eqnLeft == 4*eqnRight , x);
+solxBias = solve( 4*eqnLeft == eqnRight , x);
 solxBias = double(solxBias);
 solxBias = solxBias(2,1);
 %add to plot the decision rule
@@ -96,6 +96,3 @@ disp(['Error rate (c1 loss is bigger)is ' num2str(errorRate)]);
 
 
 
-clear;
-close all;
-clc;
