@@ -5,24 +5,24 @@ function runLinearRegression
     load('regdata.mat', 'R');
     
     %%clause a
-    [w, MSE] = trainOnDataAndCalcWandMSE(R);
+    [w, MSE] = myTrainOnDataAndCalcWandMSE(R);
     disp(['The MSE:'  num2str(MSE) '. The optimal W: [' num2str(w(:).') ']']) ;
     %%clause b - split and: calc W and MSE on trainData,calc MSE on testData
     [Rrows, ~] = size(R);
     splits = [10 50 100 200];
     for i=splits
         disp(['case split is ' num2str(i) ' and ' num2str(Rrows-i)]);
-       [trainData, testData] = permAndSplit(R,i); 
-       [w, MSE] = trainOnDataAndCalcWandMSE(trainData);
+       [trainData, testData] = myPermAndSplit(R,i); 
+       [w, MSE] = myTrainOnDataAndCalcWandMSE(trainData);
        disp(['       On |trainData| =' num2str(i)]);
        disp(['       The MSE:'  num2str(MSE) '. The optimal W: [' num2str(w(:).') ']']) ;
-       MSE = testOnDataAndCalcMSE(testData,w);
+       MSE = myTestOnDataAndCalcMSE(testData,w);
        disp(['       On |testData| =' num2str(Rrows-i)]);
        disp(['       The MSE:'  num2str(MSE)]) ;
     end
 end
 
-function [w,MSE] = trainOnDataAndCalcWandMSE(R)
+function [w,MSE] = myTrainOnDataAndCalcWandMSE(R)
     [Rrows, Rcols] = size(R);
     X = R(:, 2:Rcols);%chop train samples
     y = R(:,1);%chop first column
@@ -32,13 +32,13 @@ function [w,MSE] = trainOnDataAndCalcWandMSE(R)
     for smpInd = 1 : Rrows
         yt = y(smpInd);%get real y
         xCurrnet = X(smpInd, :);%get xi
-        yCurrent = fxw(xCurrnet, w);%use y=f(x,w)
+        yCurrent = myfxw(xCurrnet, w);%use y=f(x,w)
         MSE = MSE + (yt - yCurrent)^2;%calc MSE
     end
     MSE = MSE / Rrows;%normalize
 end
 
-function MSE = testOnDataAndCalcMSE(testData,w)
+function MSE = myTestOnDataAndCalcMSE(testData,w)
     [Rrows, Rcols] = size(testData);
     X = testData(:, 2:Rcols);
     y = testData(:,1);    
@@ -47,14 +47,14 @@ function MSE = testOnDataAndCalcMSE(testData,w)
     for smpInd = 1 : Rrows
         yt = y(smpInd);%get real y
         xCurrnet = X(smpInd, :);%get xi
-        yCurrent = fxw(xCurrnet, w);%use y=f(x,w)
+        yCurrent = myfxw(xCurrnet, w);%use y=f(x,w)
         MSE = MSE + (yt - yCurrent)^2;%calc MSE
     end
     MSE = MSE / Rrows;%normalize
 end
 
 
-function y=fxw(x,w)
+function y=myfxw(x,w)
     y = w(1);
     [~,c] = size(x);
     for i=1 : c
@@ -62,7 +62,7 @@ function y=fxw(x,w)
     end
 end
 
-function [trainData, testData] = permAndSplit(R,trainSize)
+function [trainData, testData] = myPermAndSplit(R,trainSize)
     %permute R rows
     [Rrows, ~] = size(R);
     idx = randperm(Rrows);
