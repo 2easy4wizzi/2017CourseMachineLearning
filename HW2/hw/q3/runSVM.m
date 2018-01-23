@@ -54,12 +54,13 @@ firstC  = allC(1); sumFirstC = 0; cFirstStr  = [' -c ' num2str(firstC)  ' '];
 secondC = allC(2); sumSecondC = 0;cSecondStr = [' -c ' num2str(secondC) ' '];  
 
 classes =  0 : 1 : 9;
-kstr       = [' -v ' num2str(K) ' '];
-
+kstr    = [' -v ' num2str(K) ' '];
+temp1    = [' -s  ' num2str(0) ' '];
+temp2    = [' -t  ' num2str(2) ' '];
 for i=classes
     [sortXperClassI,sortYperClassI] = sortDataPerClass(X,Y,i);
-    op1 = [kstr cFirstStr];
-    op2 = [kstr cSecondStr];
+    op1 = [kstr cFirstStr temp1 temp2];
+    op2 = [kstr cSecondStr temp1 temp2];
     sumFirstC  = sumFirstC  + svmtrain(sortYperClassI, sortXperClassI, op1);
     sumSecondC = sumSecondC + svmtrain(sortYperClassI, sortXperClassI, op2);
 end
