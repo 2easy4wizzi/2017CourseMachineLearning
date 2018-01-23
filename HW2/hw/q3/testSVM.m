@@ -1,3 +1,6 @@
+%authors: 
+% Matan Finch, id 300895315
+% Gilad Eini , id 034744920
 function acc=testSVM(models, X,Y)
 % Function for testing SVM.
 % X is nxd matrix, where n is the number of tested samples and d is the dimension of the features vectors.

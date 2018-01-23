@@ -1,3 +1,6 @@
+%authors: 
+% Matan Finch, id 300895315
+% Gilad Eini , id 034744920
 function [models,cv_acc]=trainRBFSVM(X,Y,K, allC,allG)
 %Train RBF kernel SVM and use K-fold cross validation to find the best parameters (one set for all classes)  from allC and allG
 % X is Nxd matrix of  training data, N is the number of items, d is the size of the feature vector

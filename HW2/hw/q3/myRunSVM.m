@@ -1,7 +1,7 @@
 %authors: 
 % Matan Finch, id 300895315
 % Gilad Eini , id 034744920
-function runSVM 
+function myRunSVM 
     clear;
     close all;
     clc;
@@ -17,6 +17,8 @@ function runSVM
     allC = [1 5];
     allG = [0.005 0.01 0.05];
     numFolds=5;
+    
+    %%%LINIAR REGRESSION
     % For each class learn models for this class in one-against-all manner 
     % train linear SVM and use 5-fold cross-validation to find the best C parameter
     % from allC.  
@@ -28,12 +30,13 @@ function runSVM
     acc=myTestSVM(models, deX,deY);
     fprintf('Test accuracy is %2.2f\n',acc);
     mypause();
+    
+    %%%RBF KERNEL
     %train kernel SVM with RBF kernel and cross-validation to find the best
     %C and G parameters from allC and allG.
     [models,cv_acc]=myTrainRBFSVM(trX,trY,numFolds, allC,allG);
     fprintf('Cross-validation accuracy of RBF SVM is %2.2f\n',cv_acc);
     mypause();
-
     %test kernel SVM for each class in one-against-all manner and report the
     %accuracy rate for each class
     acc=myTestSVM(models, deX,deY);
@@ -50,52 +53,52 @@ function [models,cv_acc]=myTrainLinearSVM(X,Y,K, allC)
 % cv_acc is the cross-validation accuracy rate (number of times the predicted label is equal to the true label devided by the number of validation points.)
 % The rate should be averaged over K folds. 
 %Implement your code here. Note that the multi-class classifiers should be trained in one-against-all manner.
-firstC  = allC(1); sumFirstC = 0; cFirstStr  = [' -c ' num2str(firstC)  ' '];
-secondC = allC(2); sumSecondC = 0;cSecondStr = [' -c ' num2str(secondC) ' '];  
 
-classes =  0 : 1 : 9;
-kstr    = [' -v ' num2str(K) ' '];
-temp1    = [' -s  ' num2str(0) ' '];
-temp2    = [' -t  ' num2str(2) ' '];
+classes =  0 : 9;%10 classes - zero to nine
+sumFirstC = 0;%meassure cross-validation accuracy rate with C=1
+sumSecondC = 0;%meassure cross-validation accuracy rate with C=5
+
 for i=classes
     [sortXperClassI,sortYperClassI] = sortDataPerClass(X,Y,i);
-    op1 = [kstr cFirstStr temp1 temp2];
-    op2 = [kstr cSecondStr temp1 temp2];
-    sumFirstC  = sumFirstC  + svmtrain(sortYperClassI, sortXperClassI, op1);
+    op1 = ['-q -v ',num2str(K),' -c ', num2str(allC(1))];
+    op2 = ['-q -v ',num2str(K),' -c ', num2str(allC(2))];
+    sumFirstC  = sumFirstC  + svmtrain(sortYperClassI, sortXperClassI, op1); %#ok<*SVMTRAIN>
     sumSecondC = sumSecondC + svmtrain(sortYperClassI, sortXperClassI, op2);
 end
+
 sumFirstC = sumFirstC / 10;
 sumSecondC = sumSecondC / 10;
+disp(['sumFirstC: ' num2str(sumFirstC) ' sumSecondC:' num2str(sumSecondC)]);
 
 if(sumFirstC > sumSecondC)
-    cChosenStr = cFirstStr;
+    cChosenStr = num2str(allC(1));
     cv_acc = sumFirstC;
 else
-    cChosenStr = cSecondStr;
+    cChosenStr = num2str(allC(2));
     cv_acc = sumSecondC;
 end
 
-for i=classes
+for i=classes%calculate models using best C found from [1 5]
     [sortXperClassI,sortYperClassI] = sortDataPerClass(X,Y,i);
-    op = [cChosenStr];
+    op = ['-q -c ', num2str(cChosenStr)];
     modelI = svmtrain(sortYperClassI, sortXperClassI, op);
     models(i+1) = modelI;
 end
 
 end
 
-function [sortXperClassI,sortYperClassI] = sortDataPerClass(X,Y,i)
-    [rows,~] = size(Y);
+function [sortXperClassI,sortYperClassI] = sortDataPerClass(samples,labels,classI)
+    [rows,~] = size(labels);
     indexOnes = 1;
     indexMinusOnes = 1;
     for r=1 : rows
-        if(Y(r) == i)
+        if(labels(r) == classI)
            onesYArray(indexOnes) = 1;
-           onesXArray(indexOnes,:) = X(r,:);
+           onesXArray(indexOnes,:) = samples(r,:);
            indexOnes = indexOnes + 1;
         else
            minOnesYArray(indexMinusOnes) = -1;
-           minOnesXArray(indexMinusOnes,:) = X(r,:);
+           minOnesXArray(indexMinusOnes,:) = samples(r,:);
            indexMinusOnes = indexMinusOnes + 1;
         end
     end   
@@ -118,7 +121,6 @@ for i=classes
     [predicted_label] = svmpredict(sortYperClassI, sortXperClassI, models(i+1));
 end
 
-
 % if(sumFirstC > sumSecondC)
 %     cChosenStr = cFirstStr;
 %     cv_acc = sumFirstC;
@@ -126,9 +128,6 @@ end
 %     cChosenStr = cSecondStr;
 %     cv_acc = sumSecondC;
 % end
-
-
-
 end
 
 function [models,cv_acc]=myTrainRBFSVM(X,Y,K, allC,allG)
@@ -140,78 +139,46 @@ function [models,cv_acc]=myTrainRBFSVM(X,Y,K, allC,allG)
 % cv_acc is the cross-validation accuracy rate (number of times the predicted label is equal to the true label devided by the number of validation points.)
 % The rate should be averaged over K folds. 
 %Implement your code here. Note that the multi-class classifiers should be trained in one-against-all manner.
-firstC  = allC(1); cFirstStr  = [' -c ' num2str(firstC)  ' '];
-secondC = allC(2); cSecondStr = [' -c ' num2str(secondC) ' '];  
-firstG = allG(1);  firstGStr   = [' -g ' num2str(firstG) ' '];
-secondG = allG(2); secondGStr = [' -g ' num2str(secondG) ' '];
-thirdG = allG(3);  thirdGStr   = [' -g ' num2str(thirdG) ' '];
-sum11 = 0; sum12 = 0; sum13 = 0; sum21 = 0; sum22 = 0; sum23 = 0;
+
+sumMat = zeros(2,3);% i.e sumMat(1,3): allC(1) and allG(3)
 classes =  0 : 1 : 9;
-kstr       = [' -v ' num2str(K) ' '];
 
+bar=waitbar(0,'Cross Val RBF SVM...');
 for i=classes
     [sortXperClassI,sortYperClassI] = sortDataPerClass(X,Y,i);
     
-    op11 = [kstr cFirstStr firstGStr];
-    sum11  = sum11  + svmtrain(sortYperClassI, sortXperClassI, op11);
+    op11 = ['-q -v ',num2str(K),' -c ', num2str(allC(1)), ' -g ' , num2str(allG(1))];
+    sumMat(1,1) = sumMat(1,1) + svmtrain(sortYperClassI, sortXperClassI, op11);
     
-    op12 = [kstr cFirstStr secondGStr];
-    sum12  = sum12  + svmtrain(sortYperClassI, sortXperClassI, op12);
+    op12 = ['-q -v ',num2str(K),' -c ', num2str(allC(1)), ' -g ' , num2str(allG(2))];
+    sumMat(1,2) = sumMat(1,2) + svmtrain(sortYperClassI, sortXperClassI, op12);
     
-    op13 = [kstr cFirstStr thirdGStr];
-    sum13  = sum13  + svmtrain(sortYperClassI, sortXperClassI, op13);
+    op13 = ['-q -v ',num2str(K),' -c ', num2str(allC(1)), ' -g ' , num2str(allG(3))];
+    sumMat(1,3) = sumMat(1,3) + svmtrain(sortYperClassI, sortXperClassI, op13);
     
-    op21 = [kstr cSecondStr firstGStr];
-    sum21 = sum21 + svmtrain(sortYperClassI, sortXperClassI, op21);
+    op21 = ['-q -v ',num2str(K),' -c ', num2str(allC(2)), ' -g ' , num2str(allG(1))];
+    sumMat(2,1) = sumMat(2,1) + svmtrain(sortYperClassI, sortXperClassI, op21);
     
-    op22 = [kstr cSecondStr secondGStr];
-    sum22 = sum22 + svmtrain(sortYperClassI, sortXperClassI, op22);
+    op22 = ['-q -v ',num2str(K),' -c ', num2str(allC(2)), ' -g ' , num2str(allG(2))];
+    sumMat(2,2) = sumMat(2,2) + svmtrain(sortYperClassI, sortXperClassI, op22);
     
-    op23 = [kstr cSecondStr thirdGStr];
-    sum23 = sum23 + svmtrain(sortYperClassI, sortXperClassI, op23);
-    
+    op23 = ['-q -v ',num2str(K),' -c ', num2str(allC(2)), ' -g ' , num2str(allG(3))];
+    sumMat(2,3) = sumMat(2,3) + svmtrain(sortYperClassI, sortXperClassI, op23);
+    waitbar((i+1)/10);
 end
-sum11 = sum11/10;
-sum12 = sum12/10;
-sum13 = sum13/10;
-sum21 = sum21/10;
-sum22 = sum22/10;
-sum23 = sum23/10;
+close(bar);
 
-vec = [sum11 sum12 sum13 sum21 sum22 sum23];
-maxSum = max(vec);
-switch maxSum
-case sum11
-    cChosenStr = cFirstStr;
-    gChosenStr = firstGStr;
-    cv_acc = sum11;
-case sum12
-    cChosenStr = cFirstStr;
-    gChosenStr = secondGStr;
-    cv_acc = sum12;
-case sum13
-    cChosenStr = cFirstStr;
-    gChosenStr = thirdGStr;
-    cv_acc = sum13;
-case sum21
-    cChosenStr = cSecondStr;
-    gChosenStr = firstGStr;
-    cv_acc = sum21;
-case sum22
-    cChosenStr = cSecondStr;
-    gChosenStr = secondGStr;
-    cv_acc = sum22;
-case sum23
-    cChosenStr = cSecondStr;
-    gChosenStr = thirdGStr;
-    cv_acc = sum23;
-otherwise
- disp('');
-end
+sumMat = sumMat/10;
+[~,I] = max(sumMat(:));
+[maxRow, maxCol] = ind2sub(size(sumMat),I);
+
+cv_acc = sumMat(maxRow,maxCol);
+cChosenStr = allC(maxRow);
+gChosenStr = allG(maxCol);
 
 for i=classes
     [sortXperClassI,sortYperClassI] = sortDataPerClass(X,Y,i);
-    op = [cChosenStr gChosenStr];
+    op = ['-q -c ', num2str(cChosenStr), ' -g ' , num2str(gChosenStr)];
     modelI = svmtrain(sortYperClassI, sortXperClassI, op);
     models(i+1) = modelI;
 end
