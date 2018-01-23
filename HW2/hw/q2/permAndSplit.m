@@ -1,3 +1,6 @@
+%authors: 
+% Matan Finch, id 300895315
+% Gilad Eini , id 034744920
 function [trainData, testData] = permAndSplit(R,trainSize)
     %permute R rows
     [Rrows, ~] = size(R);
