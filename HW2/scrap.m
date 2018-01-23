@@ -27,3 +27,7 @@ end
 
 % q = reshape(mn,99,99);
 % figure,imagesc(q);
+
+h=waitbar(0,'Calculating Sb...');
+    waitbar(i/rows);
+close(h);
