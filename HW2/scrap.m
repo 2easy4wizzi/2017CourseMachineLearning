@@ -24,3 +24,6 @@ end
 % firstPic = normT(1,:);
 % q = reshape(firstPic,99,99);
 % figure,imagesc(q);
+
+% q = reshape(mn,99,99);
+% figure,imagesc(q);
